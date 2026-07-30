@@ -1,0 +1,24 @@
+<mujoco model="bigreddog terrain">
+  <include file="bigreddog.xml"/>
+
+  <size njmax="5000" nconmax="2000"/>
+  <statistic center="0 0 1.5" extent="12"/>
+  <visual>
+    <quality shadowsize="4096"/>
+    <map znear="0.001" zfar="50"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512"/>
+    <texture name="terrain_texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 .15 .2" width="512" height="512" mark="cross" markrgb=".8 .8 .8"/>
+    <material name="terrain_matplane" reflectance="0" texture="terrain_texplane" texrepeat="1 1" texuniform="true"/>
+    <hfield name="terrain_hfield" file="../../rpo/terrain_assets/terrain_hfield.png" size="10 10 3.4 2"/>
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse=".4 .4 .4" specular=".1 .1 .1" pos="0 0 5" dir="0 0 -1" castshadow="false"/>
+    <light directional="true" diffuse=".6 .6 .6" specular=".2 .2 .2" pos="0 0 4" dir="0 0 -1"/>
+    <geom name="terrain_ground" type="hfield" hfield="terrain_hfield" pos="0 0 0" material="terrain_matplane" condim="4" contype="1" conaffinity="15" friction="1 0.005 0.0001" group="0"/>
+  </worldbody>
+</mujoco>
