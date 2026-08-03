@@ -41,3 +41,29 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.bigreddog_parkour_agent_cfg:BigReddogParkourPPORunnerCfg",
     },
 )
+
+gym.register(
+    id="BigReddog-Parkour-AMP",
+    entry_point="robolab.tasks.manager_based.parkour.bigreddog_parkour_amp_env:BigReddogParkourAmpEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.bigreddog_parkour_amp_env_cfg:BigReddogParkourAmpEnvCfg",
+        "rsl_rl_cfg_entry_point": (
+            f"{agents.__name__}.bigreddog_parkour_amp_agent_cfg:BigReddogParkourAmpRunnerCfg"
+        ),
+    },
+)
+
+gym.register(
+    id="BigReddog-Parkour-AMP-Play",
+    entry_point="robolab.tasks.manager_based.parkour.bigreddog_parkour_amp_env:BigReddogParkourAmpEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": (
+            f"{__name__}.bigreddog_parkour_amp_env_cfg:BigReddogParkourAmpEnvCfg_PLAY"
+        ),
+        "rsl_rl_cfg_entry_point": (
+            f"{agents.__name__}.bigreddog_parkour_amp_agent_cfg:BigReddogParkourAmpRunnerCfg"
+        ),
+    },
+)

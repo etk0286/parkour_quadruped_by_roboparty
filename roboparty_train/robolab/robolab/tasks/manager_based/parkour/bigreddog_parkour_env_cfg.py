@@ -20,6 +20,56 @@ from robolab.tasks.manager_based.parkour.parkour_env_cfg import (
 )
 
 
+# BigReddog-only task reward scales. Both the PPO and AMP parkour tasks use
+# this table, so tuning here does not change the humanoid RPO task.
+BIG_REDDOG_PARKOUR_REWARD_WEIGHTS = {
+    # Task tracking
+    "track_lin_vel_xy_exp": 5.0,
+    "track_ang_vel_z_exp": 5.0,
+    "heading_error": -1.0,
+    "dont_wait": -0.5,
+    "is_alive": 3.0,
+    "lin_vel_z_l2": -5.0,
+    "stand_still": -1.3,
+    # Contact and stability
+    "feet_slide": -1.0,
+    "ang_vel_xy_l2": -0.1,
+    "flat_orientation_l2": -3.0,
+    "sound_suppression": -5.0e-4,
+    "undesired_contacts": -1.0,
+    "feet_stumble": -1.0,
+    # Actuation and regularization
+    "dof_torques_l2": -1.0e-5,
+    "dof_acc_l2": -2.5e-7,
+    "dof_vel_l2": -1.0e-4,
+    "joint_regularization": -1.0e-4,
+    "action_rate_l2": -0.01,
+    "energy": -5.0e-5,
+    # Safety limits
+    "dof_pos_limits": -1.0,
+    "dof_vel_limits": -1.0,
+    "torque_limits": -0.01,
+}
+
+# These two reward weights are changed dynamically by the curriculum.
+BIG_REDDOG_PARKOUR_CURRICULUM_FINAL_WEIGHTS = {
+    "feet_stumble": -10.0,
+    "undesired_contacts": -10.0,
+}
+
+
+def apply_bigreddog_parkour_reward_weights(cfg) -> None:
+    """Apply all BigReddog task and reward-curriculum scales."""
+    rewards = cfg.rewards.rewards
+    for term_name, weight in BIG_REDDOG_PARKOUR_REWARD_WEIGHTS.items():
+        getattr(rewards, term_name).weight = weight
+
+    for term_name, final_weight in BIG_REDDOG_PARKOUR_CURRICULUM_FINAL_WEIGHTS.items():
+        curriculum_term = getattr(cfg.curriculum, f"{term_name}_weight")
+        curriculum_term.params["init_weight"] = BIG_REDDOG_PARKOUR_REWARD_WEIGHTS[term_name]
+        curriculum_term.params["final_weight"] = final_weight
+
+
 ROUGH_TERRAINS_CFG_PLAY = copy.deepcopy(ROUGH_TERRAINS_CFG)
 for sub_terrain_cfg in ROUGH_TERRAINS_CFG_PLAY.sub_terrains.values():
     sub_terrain_cfg.wall_prob = [0.0, 0.0, 0.0, 0.0]
@@ -82,6 +132,9 @@ class BigReddogParkourEnvCfg(ManagerBasedRLEnvCfg):
         rewards.pelvis_orientation_l2 = None
         rewards.feet_flat_ori = None
         rewards.feet_at_plane = None
+
+        # Apply the complete BigReddog-only reward scale table above.
+        apply_bigreddog_parkour_reward_weights(self)
 
         # Generic contact rewards, redirected from humanoid ankles to all four
         # fixed foot links.

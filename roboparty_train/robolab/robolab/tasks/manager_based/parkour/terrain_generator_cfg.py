@@ -145,7 +145,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         ),
         "pyramid_stairs_32": terrain_gen.PerlinPyramidStairsTerrainCfg(
             proportion=0.1,
-            step_height_range=(0.05, 0.20),
+            step_height_range=(0.03, 0.15),
             step_width=0.32,
             platform_width=2.0,
             border_width=0.5,
@@ -172,7 +172,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         ),
         "pyramid_stairs_30": terrain_gen.PerlinPyramidStairsTerrainCfg(
             proportion=0.1,
-            step_height_range=(0.05, 0.20),
+            step_height_range=(0.03, 0.15),
             step_width=0.30,
             platform_width=2.0,
             border_width=0.5,
@@ -199,7 +199,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         ),
         "pyramid_stairs_28": terrain_gen.PerlinPyramidStairsTerrainCfg(
             proportion=0.1,
-            step_height_range=(0.05, 0.20),
+            step_height_range=(0.03, 0.15),
             step_width=0.28,
             platform_width=2.0,
             border_width=0.5,
@@ -226,7 +226,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         ),
         "pyramid_stairs_inv_32": terrain_gen.PerlinInvertedPyramidStairsTerrainCfg(
             proportion=0.1,
-            step_height_range=(0.05, 0.20),
+            step_height_range=(0.03, 0.15),
             step_width=0.32,
             platform_width=2.0,
             border_width=0.5,
@@ -253,7 +253,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         ),
         "pyramid_stairs_inv_30": terrain_gen.PerlinInvertedPyramidStairsTerrainCfg(
             proportion=0.1,
-            step_height_range=(0.05, 0.20),
+            step_height_range=(0.03, 0.15),
             step_width=0.30,
             platform_width=2.0,
             border_width=0.5,
@@ -280,7 +280,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         ),
         "pyramid_stairs_inv_28": terrain_gen.PerlinInvertedPyramidStairsTerrainCfg(
             proportion=0.1,
-            step_height_range=(0.05, 0.20),
+            step_height_range=(0.03, 0.15),
             step_width=0.28,
             platform_width=2.0,
             border_width=0.5,

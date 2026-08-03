@@ -16,7 +16,9 @@ class BigReddogEncoderMoEActorCriticCfg:
     dimension and can be used with BigReddog's 12 actuated joints.
     """
 
-    class_name: str = "rsl_rl.modules:EncoderMoEActorCritic"
+    # AMPRunner currently resolves this field with eval(), while OnPolicyRunner
+    # also supports the simple rsl_rl class name through resolve_callable().
+    class_name: str = "EncoderMoEActorCritic"
     init_noise_std: float = 1.0
     noise_std_type: str = "log"
     num_moe_experts: int = 5

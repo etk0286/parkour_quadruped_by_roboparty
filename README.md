@@ -29,3 +29,35 @@ sim2sim parkour_quadruped
  python robolab/scripts/mujoco/sim2sim_bigreddog_parkour.py --depth_encoder logs/rsl_rl/bigreddog_parkour/2026-07-28_17-04-27/exported/0-depth_encoder.onnx --actor /home/csl/Isaac_Lab_Roboparty/roboparty_train/logs/rsl_rl/bigreddog_parkour/2026-07-28_17-04-27/exported/actor.onnx --scene stairs
 ``` 
 ![Robot demonstration](sim2sim.png)
+
+
+
+
+
+
+
+amp+parkour
+
+
+train
+``` 
+python robolab/scripts/rsl_rl/train.py \
+  --task BigReddog-Parkour-AMP \
+  --num_envs 4096 \
+  --max_iterations 10000 \
+  --run_name amp_parkour_v1 \
+  --logger tensorboard \
+  --headless
+``` 
+
+
+
+
+play
+
+``` 
+python scripts/rsl_rl/play_parkour.py \
+  --task BigReddog-Parkour-AMP-Play \
+  --num_envs 1 \
+  --checkpoint /absolute/path/to/model_5000.pt
+  ``` 
