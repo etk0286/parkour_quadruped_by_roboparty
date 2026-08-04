@@ -184,7 +184,7 @@
   </body>
   <!-- Right of spawn (-Y): four platforms 2.0m x 1.0m (h 0.15/0.15/0.20/0.25m), 0.3m edge gap each. -->
   <body name="platforms_right" pos="0.000000 -3.150000 0.000000">
-  <geom name="platform_right_near" class="stair_tread" pos="0.000000 0.000000 0.075000" size="1.000000 0.500000 0.075000"/>
+  <geom name="platform_right_near" class="stair_tread" pos="0.000000 0.000000 0.060000" size="1.000000 0.500000 0.060000"/>
   <geom name="platform_right_far" class="stair_tread" pos="0.000000 -1.300000 0.075000" size="1.000000 0.500000 0.075000"/>
   <geom name="platform_right_h20" class="stair_tread" pos="0.000000 -2.600000 0.100000" size="1.000000 0.500000 0.100000"/>
   <geom name="platform_right_h25" class="stair_tread" pos="0.000000 -3.900000 0.125000" size="1.000000 0.500000 0.125000"/>

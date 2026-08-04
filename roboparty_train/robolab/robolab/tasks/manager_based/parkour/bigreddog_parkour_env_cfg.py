@@ -116,7 +116,7 @@ class BigReddogParkourEnvCfg(ManagerBasedRLEnvCfg):
         self.scene.knee_volume_points = None
 
         self.scene.camera.offset.pos = (0.28, 0.0, 0.12)
-        self.scene.camera.offset.rot =(0.966, 0.0, 0.259, 0.0)
+        self.scene.camera.offset.rot =(0.966, 0.0, 0.259, 0.0) #45 degree
         # A normal PPO policy only consumes policy and critic observations.
         self.observations.disc = None
         self.observations.disc_demo = None

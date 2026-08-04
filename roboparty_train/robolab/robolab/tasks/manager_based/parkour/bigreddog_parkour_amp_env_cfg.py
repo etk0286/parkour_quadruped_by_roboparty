@@ -2,7 +2,7 @@
 
 import copy
 import os
-
+import numpy as np
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 
@@ -113,6 +113,7 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         self.scene.terrain.terrain_generator = ROUGH_TERRAINS_CFG
         self.scene.terrain.max_init_terrain_level = 0
         self.scene.camera.prim_path = "{ENV_REGEX_NS}/Robot/base_link"
+        self.scene.camera.ray_alignment = "base"
         self.scene.camera.mesh_prim_paths.extend(get_link_prim_targets(BIG_REDDOG_LINKS))
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/base_link"
         self.scene.left_height_scanner = None
@@ -120,7 +121,7 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         self.scene.leg_volume_points = None
         self.scene.knee_volume_points = None
         self.scene.camera.offset.pos = (0.28, 0.0, 0.12)
-        self.scene.camera.offset.rot = (0.966, 0.0, 0.259, 0.0)
+        self.scene.camera.offset.rot = (0.9239,0.0,0.3827,0.0)#45 degree
 
         # AMP motion data and matching discriminator history.
         self.motion_data.motion_dataset.motion_data_dir = BIG_REDDOG_MOTION_DIR
@@ -168,6 +169,48 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         self.curriculum.volume_points_penetration_weight_knee = None
 
 
+        
+
+@configclass
+class CommandsCfg:
+    """Command specifications for the MDP."""
+
+    base_velocity = mdp.PoseVelocityCommandCfg(
+        asset_name="robot",
+        resampling_time_range=(8.0, 12.0),
+        debug_vis=False,
+        velocity_control_stiffness=2.0,
+        heading_control_stiffness=2.0,
+        rel_standing_envs=0.05,
+        straight_target_prob=0.8, # 80% chance to force the target y to 0 for straight walking.
+        ranges=mdp.PoseVelocityCommandCfg.Ranges(lin_vel_x=(0.0, 0.0), lin_vel_y=(0.0, 0.0), ang_vel_z=(-1.0, 1.0)),
+        random_velocity_terrain=["perlin_rough_stand"],
+        velocity_ranges={
+            "perlin_rough": {"lin_vel_x": (0.4, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "perlin_rough_walk": {"lin_vel_x": (0.4, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (0.0, 0.0)},
+            "perlin_rough_trun": {"lin_vel_x": (0.0, 0.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "perlin_rough_stand": {"lin_vel_x": (0.0, 0.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (0.0, 0.0)},
+            "square_gaps": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "pyramid_stairs_32": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "pyramid_stairs_30": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "pyramid_stairs_28": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "pyramid_stairs_inv_32": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "pyramid_stairs_inv_30": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "pyramid_stairs_inv_28": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "hf_pyramid_slope_inv": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+        },
+        only_positive_lin_vel_x=True,
+        lin_vel_threshold=0.0,
+        ang_vel_threshold=0.0,
+        target_dis_threshold=0.4,
+    )
+
+
+
+
+
+
+
 @configclass
 class BigReddogParkourAmpEnvCfg_PLAY(BigReddogParkourAmpEnvCfg):
     """Small deterministic AMP scene used to play BigReddog checkpoints."""
@@ -183,6 +226,19 @@ class BigReddogParkourAmpEnvCfg_PLAY(BigReddogParkourAmpEnvCfg):
         self.commands.base_velocity.debug_vis = True
 
         terrain_name = "pyramid_stairs_inv_32"
+        #perlin_rough
+        # perlin_rough_walk
+        # perlin_rough_trun
+        # perlin_rough_stand
+        # square_gaps
+        # pyramid_stairs_32
+        # pyramid_stairs_30
+        # pyramid_stairs_28
+        # pyramid_stairs_inv_32
+        # pyramid_stairs_inv_30
+        # pyramid_stairs_inv_28
+        # hf_pyramid_slope_inv
+
         terrain_generator = self.scene.terrain.terrain_generator
         selected_terrain = terrain_generator.sub_terrains[terrain_name]
         selected_terrain.proportion = 1.0
@@ -192,7 +248,7 @@ class BigReddogParkourAmpEnvCfg_PLAY(BigReddogParkourAmpEnvCfg):
 
         self.commands.base_velocity.velocity_ranges = {
             terrain_name: {
-                "lin_vel_x": (-0.5, 0.5),
+                "lin_vel_x": (0.8, 0.8),
                 "lin_vel_y": (0.0, 0.0),
                 "ang_vel_z": (-1.0, 1.0),
             }

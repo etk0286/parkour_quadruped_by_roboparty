@@ -1,7 +1,7 @@
 # Isaac_Lab_Roboparty
 conda env
 ``` 
-conda activate env_isaaclab
+conda activate env_isaaclab_course
 ``` 
 
 

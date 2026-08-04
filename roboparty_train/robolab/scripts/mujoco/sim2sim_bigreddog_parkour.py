@@ -77,7 +77,9 @@ _OBS_HISTORY_KEYS: tuple[str, ...] = (
 # Extrinsic: same as camera.offset.pos — camera origin in torso_link frame (world: x + R_torso @ pos).
 _CAMERA_OFFSET_POS_BODY = np.array([0.28, 0.0, 0.12], dtype=np.float64)
 # Offset rot (w,x,y,z) per GroupedRayCasterCameraCfg / IsaacLab (not scipy order).
-_CAMERA_OFFSET_QUAT_WXYZ = np.array([0.966, 0.0, 0.259, 0.0], dtype=np.float64)
+pitch_deg = 45.0
+half_angle = np.deg2rad(pitch_deg)/2.0
+_CAMERA_OFFSET_QUAT_WXYZ = np.array([np.cos(half_angle), 0.0, np.sin(half_angle), 0.0], dtype=np.float64)
 # Depth clip: MJCF <map znear> × extent; keep small to avoid near-field stair tread culling.
 _DEPTH_ZNEAR_SCALE = 0.001
 _DEPTH_ZFAR_SCALE = 50.0
@@ -109,6 +111,14 @@ _SPEED_LIMIT_X = 0.8
 _SPEED_LIMIT_Y = 0.0
 _SPEED_LIMIT_Z = 1.0
 
+# Depth-camera debug visualization in the interactive MuJoCo viewer.
+_SHOW_DEPTH_RAYS = True
+_DEPTH_CAMERA_BOUNDARY_RAYS_ONLY = True
+_DEPTH_CAMERA_INTERIOR_PIXEL_STRIDE = 5
+_DEPTH_CAMERA_MARKER_RADIUS = 0.03
+_DEPTH_CAMERA_MARKER_RGBA = np.array([0.1, 0.7, 1.0, 1.0], dtype=np.float32)
+_DEPTH_CAMERA_RAY_RGBA = np.array([1, 0.0, 0.0, 1.0], dtype=np.float32)
+_DEPTH_CAMERA_RAY_WIDTH = 0.01
 
 _MujocoViewerBase = mujoco_viewer.MujocoViewer if mujoco_viewer is not None else object
 
@@ -118,8 +128,57 @@ class CompactOverlayMujocoViewer(_MujocoViewerBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        required_maxgeom = int(self.model.ngeom) + (_RAW_DEPTH_H * _RAW_DEPTH_W) + 1024
+        if int(self.scn.maxgeom) < required_maxgeom:
+            self.scn = mujoco.MjvScene(self.model, maxgeom=required_maxgeom)
         self.ctx = mujoco.MjrContext(self.model, mujoco.mjtFontScale.mjFONTSCALE_200.value)
         self._velocity_table = None
+        self._depth_camera_origin = None
+        self._depth_ray_endpoints = None
+
+    def set_depth_ray_visualization(self, origin: np.ndarray, endpoints: np.ndarray) -> None:
+        """Set the camera origin and world-space endpoints rendered on the next frame."""
+        self._depth_camera_origin = np.asarray(origin, dtype=np.float64).reshape(3)
+        self._depth_ray_endpoints = np.asarray(endpoints, dtype=np.float64).reshape(-1, 3)
+
+    def _draw_depth_ray_visualization(self) -> None:
+        if self._depth_camera_origin is None or self._depth_ray_endpoints is None:
+            return
+
+        available_geoms = int(self.scn.maxgeom) - int(self.scn.ngeom)
+        if available_geoms <= 0:
+            return
+        ray_count = min(len(self._depth_ray_endpoints), max(0, available_geoms - 1))
+
+        origin_geom = self.scn.geoms[self.scn.ngeom]
+        mujoco.mjv_initGeom(
+            origin_geom,
+            mujoco.mjtGeom.mjGEOM_SPHERE.value,
+            np.full(3, _DEPTH_CAMERA_MARKER_RADIUS, dtype=np.float64),
+            self._depth_camera_origin,
+            np.eye(3, dtype=np.float64).reshape(-1),
+            _DEPTH_CAMERA_MARKER_RGBA,
+        )
+        self.scn.ngeom += 1
+
+        for endpoint in self._depth_ray_endpoints[:ray_count]:
+            ray_geom = self.scn.geoms[self.scn.ngeom]
+            mujoco.mjv_initGeom(
+                ray_geom,
+                mujoco.mjtGeom.mjGEOM_LINE.value,
+                np.zeros(3, dtype=np.float64),
+                np.zeros(3, dtype=np.float64),
+                np.eye(3, dtype=np.float64).reshape(-1),
+                _DEPTH_CAMERA_RAY_RGBA,
+            )
+            mujoco.mjv_connector(
+                ray_geom,
+                mujoco.mjtGeom.mjGEOM_LINE.value,
+                _DEPTH_CAMERA_RAY_WIDTH,
+                self._depth_camera_origin,
+                endpoint,
+            )
+            self.scn.ngeom += 1
 
     def set_velocity_table(self, cmd_values, vel_values):
         self._velocity_table = (tuple(float(v) for v in cmd_values), tuple(float(v) for v in vel_values))
@@ -183,6 +242,7 @@ class CompactOverlayMujocoViewer(_MujocoViewerBase):
                 )
                 for marker in self._markers:
                     self._add_marker_to_scene(marker)
+                self._draw_depth_ray_visualization()
 
                 mujoco.mjr_render(self.viewport, self.scn, self.ctx)
                 for gridpos, (t1, t2) in self._overlay.items():
@@ -513,15 +573,14 @@ def get_depth_camera_pose(
     bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, torso_body_name)
     if bid < 0:
         raise RuntimeError(f"Body not found: {torso_body_name}")
-
-    xmat = data.xmat[bid].reshape(3, 3)
+    xmat = data.xmat[bid].reshape(3, 3) #world->base_link
     xpos = data.xpos[bid].copy()
-    r_off = _rot_mat_wxyz(_CAMERA_OFFSET_QUAT_WXYZ)
+    r_off = _rot_mat_wxyz(_CAMERA_OFFSET_QUAT_WXYZ) #base_link -> camera
     # Isaac uses ray_alignment="yaw": the camera origin follows the body, while
     # ray directions ignore body roll and pitch.
     yaw = float(np.arctan2(xmat[1, 0], xmat[0, 0]))
     r_yaw = R.from_euler("z", yaw).as_matrix()
-    r_world = (r_yaw @ r_off).astype(np.float64)
+    r_world = (xmat @ r_off).astype(np.float64)
     eye = (xpos + xmat @ _CAMERA_OFFSET_POS_BODY).astype(np.float64)
     forward = r_world[:, 0].copy()
     fn = np.linalg.norm(forward)
@@ -663,6 +722,27 @@ def capture_depth_mj_ray(
                 radial_dist = _DEPTH_RAY_MIN + float(dist)
                 depth[j, i] = min(radial_dist * float(dirs_cam[j, i, 0]), _DEPTH_RAY_MAX)
     return depth
+
+def depth_ray_visualization_geometry(
+    data: mujoco.MjData,
+    model: mujoco.MjModel,
+    torso_body_name: str,
+    vertical_fov_deg: float,
+    horizontal_fov_deg: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the camera origin and debug-ray endpoints in world coordinates."""
+    pose = get_depth_camera_pose(data, model, torso_body_name)
+    dirs_cam = pinhole_ray_dirs_cam(_RAW_DEPTH_H, _RAW_DEPTH_W, vertical_fov_deg, horizontal_fov_deg)
+    if _DEPTH_CAMERA_BOUNDARY_RAYS_ONLY:
+        boundary_mask = np.zeros((_RAW_DEPTH_H, _RAW_DEPTH_W), dtype=bool)
+        boundary_mask[[0, -1], :] = True
+        boundary_mask[:, [0, -1]] = True
+        pixel_stride = max(1, int(_DEPTH_CAMERA_INTERIOR_PIXEL_STRIDE))
+        boundary_mask[::pixel_stride, ::pixel_stride] = True
+        dirs_cam = dirs_cam[boundary_mask]
+    dirs_world = dirs_cam @ pose["r_world"].T
+    endpoints = pose["eye"] + dirs_world.reshape(-1, 3) * _DEPTH_RAY_MAX
+    return pose["eye"], endpoints
 
 
 def capture_depth_renderer(
@@ -1081,7 +1161,12 @@ def run_mujoco_onnx(
                 vertical_fov_deg,
                 horizontal_fov_deg,
             )
-            z_depth_low = raw_depth_to_metric_grid(raw_depth, model)
+
+            if _DEPTH_BACKEND == "ray":
+                z_depth_low = np.asarray(raw_depth,dtype=np.float64)
+            else:
+                z_depth_low = raw_depth_to_metric_grid(raw_depth, model)
+
             dproc = preprocess_depth_frame_from_lowres(z_depth_low)
             if not headless and show_depth_vis and not depth_vis_every_step:
                 ds_vis = max(1, int(depth_vis_policy_stride))
@@ -1185,6 +1270,15 @@ def run_mujoco_onnx(
                 update_follow_camera(viewer.cam, data, model)
             stride = viewer_stride
             if count_lowlevel % stride == 0:
+                if _SHOW_DEPTH_RAYS and hasattr(viewer, "set_depth_ray_visualization"):
+                    ray_origin, ray_endpoints = depth_ray_visualization_geometry(
+                        data,
+                        model,
+                        cfg.sim_config.depth_camera_body,
+                        vertical_fov_deg,
+                        horizontal_fov_deg,
+                    )
+                    viewer.set_depth_ray_visualization(ray_origin, ray_endpoints)
                 if _SIM2SIM_PERF_SHOW_VELOCITY_OVERLAY:
                     passive_viewer_velocity_overlay(
                         viewer, model, data, last_cmd_vx, last_cmd_vy, last_cmd_dyaw
