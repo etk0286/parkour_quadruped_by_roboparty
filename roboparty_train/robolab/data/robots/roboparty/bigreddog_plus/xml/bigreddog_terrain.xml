@@ -1,0 +1,60 @@
+<mujoco model="bigreddog terrain">
+  <include file="bigreddog_plus.xml"/>
+
+  <size njmax="5000" nconmax="2000"/>
+  <!-- Thirteen 8 m training tiles, exported at difficulty=0.5 and seed=0. -->
+  <statistic center="0 0 0" extent="58"/>
+  <visual>
+    <headlight diffuse="0.7 0.7 0.7" ambient="0.35 0.35 0.35" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <quality shadowsize="4096"/>
+    <map znear="0.001" zfar="50"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512"/>
+    <texture name="terrain_texplane" type="2d" builtin="checker"
+             rgb1="0.55 0.68 0.38" rgb2="0.25 0.38 0.16"
+             width="512" height="512" mark="edge" markrgb="0.85 0.85 0.85"/>
+    <material name="terrain_surface" rgba="1 1 1 1" reflectance="0.05"
+              specular="0" shininess="0" texture="terrain_texplane"
+              texrepeat="4 4" texuniform="true"/>
+    <material name="terrain_backing_floor" rgba="0.10 0.16 0.22 1"
+              reflectance="0" specular="0" shininess="0"/>
+    <hfield name="terrain_hfield"
+            file="../terrain_assets/training_terrains_difficulty_050.png"
+            size="7 55 1.659999943 0.829999983"/>
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse=".4 .4 .4" specular=".1 .1 .1" pos="0 0 5" dir="0 0 -1" castshadow="false"/>
+    <light directional="true" diffuse=".6 .6 .6" specular=".2 .2 .2" pos="0 0 4" dir="0 0 -1"/>
+    <!-- Backing floor below the minimum exported terrain height (-0.83 m).
+         It makes the finite 14 x 110 m heightfield easy to see without filling
+         square gaps or changing contact with the generated terrain surface. -->
+    <geom name="terrain_floor" type="plane" size="0 0 0.05" pos="0 0 -0.84"
+          material="terrain_backing_floor" condim="4" contype="1" conaffinity="15"
+          friction="1 0.005 0.0001" group="0"/>
+    <!-- MuJoCo height samples span [geom_z, geom_z + elevation]. Shift by
+         the exported minimum so the surface retains Isaac coordinates. -->
+    <geom name="terrain_ground" type="hfield" hfield="terrain_hfield" pos="0 0 -0.829999983"
+          material="terrain_surface" condim="4" contype="1" conaffinity="15"
+          friction="1 0.005 0.0001" group="0"/>
+
+    <!-- Tile centers. Site names make each section easy to identify in the MuJoCo UI. -->
+    <site name="terrain_perlin_rough"             pos="0 -48 0.02"  size="0.10" rgba="0.2 0.8 1 0.8" group="3"/>
+    <site name="terrain_perlin_rough_walk"        pos="0 -40 0.02"  size="0.10" rgba="0.2 0.8 1 0.8" group="3"/>
+    <site name="terrain_perlin_rough_trun"        pos="0 -32 0.02"  size="0.10" rgba="0.2 0.8 1 0.8" group="3"/>
+    <site name="terrain_perlin_rough_stand"       pos="0 -24 0.02"  size="0.10" rgba="0.2 0.8 1 0.8" group="3"/>
+    <site name="terrain_square_gaps"              pos="0 -16 0.00"  size="0.10" rgba="1 0.3 0.2 0.8" group="3"/>
+    <site name="terrain_pyramid_stairs_32"        pos="0  -8 0.83"  size="0.10" rgba="1 0.8 0.2 0.8" group="3"/>
+    <site name="terrain_pyramid_stairs_30"        pos="0   0 0.83"  size="0.10" rgba="1 0.8 0.2 0.8" group="3"/>
+    <site name="terrain_pyramid_stairs_28"        pos="0   8 0.825" size="0.10" rgba="1 0.8 0.2 0.8" group="3"/>
+    <site name="terrain_pyramid_stairs_inv_32"    pos="0  16 -0.70" size="0.10" rgba="0.8 0.3 1 0.8" group="3"/>
+    <site name="terrain_pyramid_stairs_inv_30"    pos="0  24 -0.70" size="0.10" rgba="0.8 0.3 1 0.8" group="3"/>
+    <site name="terrain_pyramid_stairs_inv_28"    pos="0  32 -0.705" size="0.10" rgba="0.8 0.3 1 0.8" group="3"/>
+    <site name="terrain_boxes"                    pos="0  40 0.015" size="0.10" rgba="0.2 1 0.3 0.8" group="3"/>
+    <site name="terrain_hf_pyramid_slope_inv"     pos="0  48 -0.175" size="0.10" rgba="1 0.4 0.7 0.8" group="3"/>
+  </worldbody>
+</mujoco>

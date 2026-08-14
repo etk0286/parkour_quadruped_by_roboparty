@@ -1,0 +1,22 @@
+BigReddog training terrain export
+difficulty=0.5
+seed=0
+bounds_min=[-7.0, -55.0, -0.8299999833106995]
+bounds_max=[7.0, 55.0, 0.8299999833106995]
+height_min=-0.8299999833103011
+height_range=1.6599999427798593
+
+Terrain centers (Isaac coordinates before centering in MuJoCo):
+perlin_rough: [0.0, -48.0, 0.02]
+perlin_rough_walk: [0.0, -40.0, 0.02]
+perlin_rough_trun: [0.0, -32.0, 0.02]
+perlin_rough_stand: [0.0, -24.0, 0.02]
+square_gaps: [0.0, -16.0, 0.0]
+pyramid_stairs_32: [0.0, -8.0, 0.8300000000000001]
+pyramid_stairs_30: [0.0, 0.0, 0.8300000000000001]
+pyramid_stairs_28: [0.0, 8.0, 0.8250000000000001]
+pyramid_stairs_inv_32: [0.0, 16.0, -0.7000000000000001]
+pyramid_stairs_inv_30: [0.0, 24.0, -0.7000000000000001]
+pyramid_stairs_inv_28: [0.0, 32.0, -0.705]
+boxes: [0.0, 40.0, 0.015]
+hf_pyramid_slope_inv: [0.0, 48.0, -0.17500000000000002]

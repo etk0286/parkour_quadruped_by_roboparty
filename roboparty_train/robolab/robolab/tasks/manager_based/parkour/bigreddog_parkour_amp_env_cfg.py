@@ -1,11 +1,28 @@
 """Configuration for BigReddog parkour with adversarial motion priors."""
-
-import copy
+import math
 import os
-import numpy as np
+import copy
+from dataclasses import MISSING
+import isaaclab.sim as sim_utils
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.managers import CurriculumTermCfg as CurrTerm
+from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
+from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
+from isaaclab.sensors.ray_caster.patterns import PinholeCameraPatternCfg
+from isaaclab.terrains import FlatPatchSamplingCfg, TerrainGeneratorCfg
 from isaaclab.utils import configclass
-
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
+from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from robolab.tasks.manager_based.amp.amp_env_cfg import AmpEnvCfg, ObservationsCfg as AmpObservationsCfg
+from robolab.tasks.manager_based.parkour.managers import MultiRewardCfg
+import robolab.tasks.manager_based.parkour.mdp as mdp
+import robolab.terrains as terrain_gen
 from robolab import ROBOLAB_ROOT_DIR
 from robolab.assets.robots.bigreddog import BIG_REDDOG_CFG, BIG_REDDOG_LINKS
 from robolab.sensors import get_link_prim_targets
@@ -13,6 +30,22 @@ from robolab.tasks.manager_based.parkour.parkour_env_cfg import (
     ParkourEnvCfg,
     ROUGH_TERRAINS_CFG,
 )
+from robolab.sensors import Grid3dPointsGeneratorCfg, NoisyGroupedRayCasterCameraCfg, VolumePointsCfg
+from robolab.terrains import GreedyconcatEdgeCylinderCfg, TerrainImporterCfg
+from robolab.utils.noise import (
+    CropAndResizeCfg,
+    DepthArtifactNoiseCfg,
+    DepthNormalizationCfg,
+    GaussianBlurNoiseCfg,
+    PerlinNoiseCfg,
+    PixelFailureNoiseCfg,
+    RandomGaussianNoiseCfg,
+    RandomConvNoiseCfg,
+    RangeBasedGaussianNoiseCfg,
+    ScaleRandomizationNoiseCfg,
+    StereoFusionNoiseCfg,
+)
+from robolab.tasks.manager_based.parkour.terrain_generator_cfg import ROUGH_TERRAINS_CFG
 
 
 AMP_NUM_STEPS = 3
@@ -27,7 +60,7 @@ BIG_REDDOG_AMP_PARKOUR_REWARD_WEIGHTS = {
     "dont_wait": -0.5,
     "is_alive": 3.0,
     "lin_vel_z_l2": -5.0,
-    "stand_still": -1.5,
+    "stand_still": -4.0, #1.5
     # Contact and stability
     "feet_slide": -1.0,
     "ang_vel_xy_l2": -0.1,
@@ -120,8 +153,9 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         self.scene.right_height_scanner = None
         self.scene.leg_volume_points = None
         self.scene.knee_volume_points = None
-        self.scene.camera.offset.pos = (0.28, 0.0, 0.12)
-        self.scene.camera.offset.rot = (0.9239,0.0,0.3827,0.0)#45 degree
+        self.scene.camera.offset.pos = (0.28, 0.0, 0.1214)
+        self.scene.camera.offset.rot = (0.939693,0.0,0.342020,0.0)#40 degree
+        self.sim.physx.gpu_collision_stack_size = 2**31
 
         # AMP motion data and matching discriminator history.
         self.motion_data.motion_dataset.motion_data_dir = BIG_REDDOG_MOTION_DIR
@@ -168,7 +202,117 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         self.curriculum.volume_points_penetration_weight_feet = None
         self.curriculum.volume_points_penetration_weight_knee = None
 
-
+class SceneCfg(InteractiveSceneCfg):
+    # ground terrain
+    terrain = TerrainImporterCfg(
+        prim_path="/World/ground",
+        terrain_type="generator",
+        terrain_generator=ROUGH_TERRAINS_CFG,
+        max_init_terrain_level=5,
+        collision_group=-1,
+        physics_material=sim_utils.RigidBodyMaterialCfg(
+            friction_combine_mode="multiply",
+            restitution_combine_mode="multiply",
+            static_friction=1.0,
+            dynamic_friction=1.0,
+        ),
+        visual_material=sim_utils.MdlFileCfg(
+            mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
+            project_uvw=True,
+            texture_scale=(0.25, 0.25),
+        ),
+        debug_vis=False,
+        virtual_obstacles={
+            "edges": GreedyconcatEdgeCylinderCfg(
+                cylinder_radius=0.03,
+                min_points=2,
+            ),
+        },
+    )
+    # robots
+    
+    camera = NoisyGroupedRayCasterCameraCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/torso_link",
+        mesh_prim_paths=[
+            "/World/ground",
+            # NOTE: Don't forget to add the robot links in robot-specific configuration file.
+        ],
+        ray_alignment="yaw",
+        pattern_cfg=PinholeCameraPatternCfg(
+            focal_length=1.0,
+            horizontal_aperture=2 * math.tan(math.radians(89.51) / 2),  # fovx
+            vertical_aperture=2 * math.tan(math.radians(58.29) / 2),  # fovy
+            width=64,
+            height=48,
+        ),
+        debug_vis=False,
+        data_types=["distance_to_image_plane"],
+        update_period=0.02,
+        depth_clipping_behavior="max",
+        offset=NoisyGroupedRayCasterCameraCfg.OffsetCfg(
+            pos=(
+                0.0875,
+                0.01,
+                0.20568,
+            ),
+            rot=(
+                0.866,
+                0.0,
+                0.5,
+                0.0,
+            ),
+            convention="world",
+        ),
+        min_distance=0.1,
+        # noise
+        noise_pipeline={
+            # --- conservative augmentations (applied on raw metric depth, before normalization) ---
+            "scale_randomization": ScaleRandomizationNoiseCfg(
+                apply_probability=0.5,
+                scale_min=0.97,
+                scale_max=1.03,
+            ),
+            "stereo_fusion": StereoFusionNoiseCfg(
+                apply_probability=0.4,
+                disparity_grad_threshold=0.10,
+                texture_var_threshold=3e-4,
+                hole_probability=0.02,
+                hole_kernel_size=1,
+                hole_value=2.5,  # treat holes as max-range (2.5 m) before normalization
+            ),
+            "random_conv": RandomConvNoiseCfg(
+                apply_probability=0.3,
+                kernel_std=0.05,
+                center_weight=1.0,
+            ),
+            "perlin_noise": PerlinNoiseCfg(
+                apply_probability=0.5,
+                octaves=3,
+                base_frequency=8.0,
+                lacunarity=2.0,
+                persistence=0.5,
+                amplitude=1.0,
+                noise_std=0.01,  # ~1 cm at 1 m, relative to 2.5 m range
+            ),
+            "pixel_failures": PixelFailureNoiseCfg(
+                apply_probability=0.5,
+                dead_pixel_prob=5e-4,
+                saturated_pixel_prob=5e-4,
+                dead_value=0.0,
+                saturated_value=2.5,  # saturated = max-range before normalization
+            ),
+            # --- fixed preprocessing (keep last) ---
+            "crop_and_resize": CropAndResizeCfg(crop_region=(30, 0, 16, 16)),
+            "gaussian_blur": GaussianBlurNoiseCfg(kernel_size=3, sigma=1),
+            "depth_normalization": DepthNormalizationCfg(
+                depth_range=(0.0, 2.5),
+                normalize=True,
+                output_range=(0.0, 1.0),
+            ),
+        },
+        data_histories={"distance_to_image_plane_noised": 37},
+    )
+    
         
 
 @configclass
@@ -184,13 +328,17 @@ class CommandsCfg:
         rel_standing_envs=0.05,
         straight_target_prob=0.8, # 80% chance to force the target y to 0 for straight walking.
         ranges=mdp.PoseVelocityCommandCfg.Ranges(lin_vel_x=(0.0, 0.0), lin_vel_y=(0.0, 0.0), ang_vel_z=(-1.0, 1.0)),
-        random_velocity_terrain=["perlin_rough_stand"],
+        #random_velocity_terrain=None["mesh_boxes"],
         velocity_ranges={
+            # "mesh_boxes": {"lin_vel_x": (0.2, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "boxes": {"lin_vel_x": (0.2, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            # "stepping_stones": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "perlin_rough": {"lin_vel_x": (0.4, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "perlin_rough_walk": {"lin_vel_x": (0.4, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (0.0, 0.0)},
             "perlin_rough_trun": {"lin_vel_x": (0.0, 0.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "perlin_rough_stand": {"lin_vel_x": (0.0, 0.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (0.0, 0.0)},
             "square_gaps": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            "training_steps": {"lin_vel_x": (0.3, 0.7), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-0.5, 0.5)},
             "pyramid_stairs_32": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "pyramid_stairs_30": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "pyramid_stairs_28": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
@@ -238,6 +386,8 @@ class BigReddogParkourAmpEnvCfg_PLAY(BigReddogParkourAmpEnvCfg):
         # pyramid_stairs_inv_30
         # pyramid_stairs_inv_28
         # hf_pyramid_slope_inv
+        # mesh_boxes
+        # boxes
 
         terrain_generator = self.scene.terrain.terrain_generator
         selected_terrain = terrain_generator.sub_terrains[terrain_name]

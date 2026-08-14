@@ -125,7 +125,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
             },
         ),
         "square_gaps": terrain_gen.PerlinSquareGapTerrainCfg(
-            proportion=0.1,
+            proportion=0.3,
             gap_distance_range=(0.1, 0.40),
             gap_depth=(0.4, 0.6),
             platform_width=2.5,
@@ -333,41 +333,43 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         #         ),
         #     },
         # ),
-        # "boxes": terrain_gen.PerlinDiscreteObstaclesTerrainCfg(
-        #     proportion=0.1,
-        #     num_obstacles=30,
-        #     obstacle_height_mode="choice",
-        #     obstacle_width_range=(0.3, 1.0),
-        #     obstacle_height_range=(0.05, 0.2),
-        #     platform_width=2.0,
-        #     border_width=0.5,
-        #     wall_prob=[0.3, 0.3, 0.3, 0.3],
-        #     wall_height=5.0,
-        #     wall_thickness=0.05,
-        #     perlin_cfg=terrain_gen.PerlinPlaneTerrainCfg(
-        #         noise_scale=0.05,
-        #         noise_frequency=20,
-        #         fractal_octaves=2,
-        #         fractal_lacunarity=2.0,
-        #         fractal_gain=0.25,
-        #         centering=True,
-        #     ),
-        #     flat_patch_sampling={
-        #         "target": FlatPatchSamplingCfg(
-        #             num_patches=50, patch_radius=[0.05, 0.10, 0.15, 0.20], max_height_diff=0.05
-        #         ),
-        #     },
-        # ),
+        
+        "boxes": terrain_gen.PerlinDiscreteObstaclesTerrainCfg(
+             proportion=0.1,
+             num_obstacles=30,
+             obstacle_height_mode="choice",
+             obstacle_width_range=(0.3, 1.0),
+             obstacle_height_range=(0.05, 0.1),
+             platform_width=2.0,
+             border_width=0.5,
+             wall_prob=[0.3, 0.3, 0.3, 0.3],
+             wall_height=5.0,
+             wall_thickness=0.05,
+             perlin_cfg=terrain_gen.PerlinPlaneTerrainCfg(
+                 noise_scale=0.05,
+                 noise_frequency=20,
+                 fractal_octaves=2,
+                 fractal_lacunarity=2.0,
+                 fractal_gain=0.25,
+                 centering=True,
+             ),
+             flat_patch_sampling={
+                 "target": FlatPatchSamplingCfg(
+                     num_patches=50, patch_radius=[0.05, 0.10, 0.15, 0.20], max_height_diff=0.05
+                ),
+            },
+        ),
+        
         # "mesh_boxes": terrain_gen.PerlinMeshRandomMultiBoxTerrainCfg(
         #     proportion=0.1,
-        #     box_height_mean=[0.05, 0.2],
+        #     box_height_mean=[0.05, 0.15],
         #     box_height_range=0.05,
         #     box_length_mean=0.4,
         #     box_length_range=0.1,
         #     box_width_mean=0.4,
         #     box_width_range=0.1,
-        #     platform_width=2.0,
-        #     generation_ratio=0.2,
+        #     platform_width=2.5,
+        #     generation_ratio=0.1,
         #     no_perlin_at_obstacle=True,
         #     wall_prob=[0.3, 0.3, 0.3, 0.3],
         #     wall_height=5.0,
@@ -376,6 +378,7 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         #         "target": FlatPatchSamplingCfg(num_patches=50, patch_radius=[0.05, 0.10, 0.15], max_height_diff=0.05),
         #     },
         # ),
+
         "hf_pyramid_slope_inv": terrain_gen.PerlinInvertedPyramidSlopedTerrainCfg(
             proportion=0.1,
             slope_range=(0.0, 0.2),

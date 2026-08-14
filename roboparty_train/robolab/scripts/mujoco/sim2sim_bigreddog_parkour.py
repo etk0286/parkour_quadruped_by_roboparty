@@ -75,9 +75,9 @@ _OBS_HISTORY_KEYS: tuple[str, ...] = (
     "actions",
 )
 # Extrinsic: same as camera.offset.pos — camera origin in torso_link frame (world: x + R_torso @ pos).
-_CAMERA_OFFSET_POS_BODY = np.array([0.28, 0.0, 0.12], dtype=np.float64)
+_CAMERA_OFFSET_POS_BODY = np.array([0.28, 0.0, 0.1214], dtype=np.float64)
 # Offset rot (w,x,y,z) per GroupedRayCasterCameraCfg / IsaacLab (not scipy order).
-pitch_deg = 45.0
+pitch_deg = 40.0
 half_angle = np.deg2rad(pitch_deg)/2.0
 _CAMERA_OFFSET_QUAT_WXYZ = np.array([np.cos(half_angle), 0.0, np.sin(half_angle), 0.0], dtype=np.float64)
 # Depth clip: MJCF <map znear> × extent; keep small to avoid near-field stair tread culling.
@@ -1010,6 +1010,8 @@ def run_mujoco_onnx(
             f"fovx≈{fovx_implied:.2f}°, Isaac cfg uses {_FOV_X_DEG}° — check camera FOV consistency."
         )
     data = mujoco.MjData(model)
+    data.qpos[0] = float(cfg.sim_config.root_x)
+    data.qpos[1] = float(cfg.sim_config.root_y)
     data.qpos[2] = float(cfg.sim_config.root_height)
     data.qpos[-cfg.robot_config.num_actions :] = cfg.robot_config.default_pos
     mujoco.mj_forward(model, data)
@@ -1390,6 +1392,17 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--terrain_section",
+        choices=(
+            "perlin_rough", "perlin_rough_walk", "perlin_rough_trun", "perlin_rough_stand",
+            "square_gaps", "pyramid_stairs_32", "pyramid_stairs_30", "pyramid_stairs_28",
+            "pyramid_stairs_inv_32", "pyramid_stairs_inv_30", "pyramid_stairs_inv_28",
+            "boxes", "hf_pyramid_slope_inv",
+        ),
+        default="perlin_rough",
+        help="Training-terrain tile used as the initial spawn when --scene terrain is selected.",
+    )
+    parser.add_argument(
         "--isaac_to_mujoco",
         type=int,
         nargs=12,
@@ -1414,7 +1427,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    mjcf_dir = f"{ISAAC_DATA_DIR}/robots/roboparty/bigreddog/xml"
+    mjcf_dir = f"{ISAAC_DATA_DIR}/robots/roboparty/bigreddog_plus/xml"
     scene_xml = {
         "stairs": f"{mjcf_dir}/bigreddog_stairs.xml",
         "terrain": f"{mjcf_dir}/bigreddog_terrain.xml",
@@ -1424,9 +1437,24 @@ if __name__ == "__main__":
         xml_path = args.mujoco_xml
     else:
         xml_path = scene_xml[args.scene]
-    root_height = args.root_height
-    if root_height is None:
-        root_height = 2.35 if args.scene == "terrain" and args.mujoco_xml is None else 0.35
+    terrain_spawns = {
+        "perlin_rough": (0.0, -48.0, 0.37),
+        "perlin_rough_walk": (0.0, -40.0, 0.37),
+        "perlin_rough_trun": (0.0, -32.0, 0.37),
+        "perlin_rough_stand": (0.0, -24.0, 0.37),
+        "square_gaps": (0.0, -16.0, 0.35),
+        "pyramid_stairs_32": (0.0, -8.0, 1.18),
+        "pyramid_stairs_30": (0.0, 0.0, 1.18),
+        "pyramid_stairs_28": (0.0, 8.0, 1.175),
+        "pyramid_stairs_inv_32": (0.0, 16.0, -0.46),
+        "pyramid_stairs_inv_30": (0.0, 24.0, -0.46),
+        "pyramid_stairs_inv_28": (0.0, 32.0, -0.467),
+        "boxes": (0.0, 40.0, 0.365),
+        "hf_pyramid_slope_inv": (0.0, 48.0, 0.175),
+    }
+    is_builtin_terrain = args.scene == "terrain" and args.mujoco_xml is None
+    root_x, root_y, default_root_height = terrain_spawns[args.terrain_section] if is_builtin_terrain else (0.0, 0.0, 0.35)
+    root_height = args.root_height if args.root_height is not None else default_root_height
 
     class Sim2simCfg:
         class sim_config:
@@ -1435,6 +1463,8 @@ if __name__ == "__main__":
             dt = 0.005
             decimation = 4
             depth_camera_body = "base_link"
+            root_x = root_x
+            root_y = root_y
             root_height = root_height
 
         class robot_config:

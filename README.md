@@ -26,7 +26,10 @@ tensorboard --logdir logs/rsl_rl/bigreddog_parkour --port 6006
 
 sim2sim parkour_quadruped
 ``` 
- python robolab/scripts/mujoco/sim2sim_bigreddog_parkour.py --depth_encoder logs/rsl_rl/bigreddog_parkour/2026-07-28_17-04-27/exported/0-depth_encoder.onnx --actor /home/csl/Isaac_Lab_Roboparty/roboparty_train/logs/rsl_rl/bigreddog_parkour/2026-07-28_17-04-27/exported/actor.onnx --scene stairs
+ python robolab/scripts/mujoco/sim2sim_bigreddog_parkour.py \
+ --depth_encoder logs/rsl_rl/bigreddog_parkour_amp/2026-07-31_20-32-21_amp_parkour_v1good/exported/0-depth_encoder.onnx \
+ --actor logs/rsl_rl/bigreddog_parkour_amp/2026-07-31_20-32-21_amp_parkour_v1good/exported/actor.onnx \
+ --scene stairs
 ``` 
 ![Robot demonstration](sim2sim.png)
 
@@ -44,18 +47,29 @@ train
 python robolab/scripts/rsl_rl/train.py \
   --task BigReddog-Parkour-AMP \
   --num_envs 4096 \
-  --max_iterations 10000 \
-  --run_name amp_parkour_v1 \
+  --max_iterations 30000 \
+  --run_name amp_parkour_box \
   --logger tensorboard \
   --headless
 ``` 
 
+test
+```
+python robolab/scripts/rsl_rl/train.py \
+  --task BigReddog-Parkour-AMP \
+  --num_envs 1 \
+  --max_iterations 30000 \
+  --run_name amp_parkour_v1 \
+  --logger tensorboard 
+```
 
 
 
 play
 
 ``` 
+PYTHONPATH=/home/csl/Isaac_Lab_Roboparty/roboparty_train/robolab \
+
 python scripts/rsl_rl/play_parkour.py \
   --task BigReddog-Parkour-AMP-Play \
   --num_envs 1 \

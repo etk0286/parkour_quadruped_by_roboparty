@@ -1,0 +1,196 @@
+<mujoco model="bigreddog stairs">
+  <include file="bigreddog_plus.xml"/>
+
+  <size njmax="5000" nconmax="2000"/>
+  <statistic center="0 0 0.5" extent="15"/>
+  <visual>
+    <quality shadowsize="4096"/>
+    <map znear="0.001" zfar="50"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <default>
+    <!-- Copied from the RPO parkour scene; tune sizes/positions here later. -->
+    <default class="stair_tread">
+      <geom type="box" condim="4" contype="1" conaffinity="15" friction="1 0.005 0.0001"
+            solref="0.001 2" margin="0" gap="0" priority="1"
+            material="mat_stair_tread" group="0"/>
+    </default>
+    <default class="stair_riser">
+      <geom type="box" condim="4" contype="1" conaffinity="15" friction="1 0.005 0.0001"
+            solref="0.001 2" margin="0" gap="0" priority="1"
+            material="mat_stair_riser" group="0"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.68 0.84 0.98" rgb2="0.90 0.95 1.0" width="512" height="512"/>
+    <texture name="tex_marble" type="2d" builtin="checker" mark="edge"
+             rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8"
+             width="300" height="300"/>
+    <material name="matplane" texture="tex_marble" texuniform="true"
+              texrepeat="5 5" reflectance="0.2"/>
+    <material name="mat_stair_tread" rgba="0.76 0.55 0.36 1" reflectance="0.07" specular="0.22" shininess="0.32"/>
+    <material name="mat_stair_riser" rgba="0.50 0.34 0.22 1" reflectance="0.05" specular="0.14" shininess="0.22"/>
+  </asset>
+
+  <worldbody>
+  <light directional="true" diffuse=".4 .4 .4" specular="0.1 0.1 0.1" pos="0 0 5.0" dir="0 0 -1" castshadow="false"/>
+  <light directional="true" diffuse=".6 .6 .6" specular="0.2 0.2 0.2" pos="0 0 4" dir="0 0 -1"/>
+  <geom name="ground" type="plane" size="0 0 1" pos="0.001 0 0" quat="1 0 0 0" material="matplane" condim="1" conaffinity="15" group="0"/>
+  <!-- Parkour: 10cm pyramid ahead of robot spawn (+X), center 2.8 m from origin. -->
+  <body name="stairs_pyramid_up" pos="2.8 0 0">
+  <geom name="pyramid_riser_0_rs_1" class="stair_riser" pos="0.000000 -2.120000 0.050000" size="2.100000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_0_rn_2" class="stair_riser" pos="0.000000 2.120000 0.050000" size="2.100000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_0_rw_3" class="stair_riser" pos="-2.120000 0.000000 0.050000" size="0.020000 2.100000 0.050000"/>
+  <geom name="pyramid_riser_0_re_4" class="stair_riser" pos="2.120000 0.000000 0.050000" size="0.020000 2.100000 0.050000"/>
+  <geom name="pyramid_ring_1_s_5" class="stair_tread" pos="0.000000 -1.950000 0.050000" size="2.100000 0.150000 0.050000"/>
+  <geom name="pyramid_ring_1_n_6" class="stair_tread" pos="0.000000 1.950000 0.050000" size="2.100000 0.150000 0.050000"/>
+  <geom name="pyramid_ring_1_w_7" class="stair_tread" pos="-1.950000 0.000000 0.050000" size="0.150000 1.800000 0.050000"/>
+  <geom name="pyramid_ring_1_e_8" class="stair_tread" pos="1.950000 0.000000 0.050000" size="0.150000 1.800000 0.050000"/>
+  <geom name="pyramid_riser_1_rs_9" class="stair_riser" pos="0.000000 -1.820000 0.150000" size="1.800000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_1_rn_10" class="stair_riser" pos="0.000000 1.820000 0.150000" size="1.800000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_1_rw_11" class="stair_riser" pos="-1.820000 0.000000 0.150000" size="0.020000 1.800000 0.050000"/>
+  <geom name="pyramid_riser_1_re_12" class="stair_riser" pos="1.820000 0.000000 0.150000" size="0.020000 1.800000 0.050000"/>
+  <geom name="pyramid_ring_2_s_13" class="stair_tread" pos="0.000000 -1.650000 0.150000" size="1.800000 0.150000 0.050000"/>
+  <geom name="pyramid_ring_2_n_14" class="stair_tread" pos="0.000000 1.650000 0.150000" size="1.800000 0.150000 0.050000"/>
+  <geom name="pyramid_ring_2_w_15" class="stair_tread" pos="-1.650000 0.000000 0.150000" size="0.150000 1.500000 0.050000"/>
+  <geom name="pyramid_ring_2_e_16" class="stair_tread" pos="1.650000 0.000000 0.150000" size="0.150000 1.500000 0.050000"/>
+  <geom name="pyramid_riser_2_rs_17" class="stair_riser" pos="0.000000 -1.520000 0.250000" size="1.500000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_2_rn_18" class="stair_riser" pos="0.000000 1.520000 0.250000" size="1.500000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_2_rw_19" class="stair_riser" pos="-1.520000 0.000000 0.250000" size="0.020000 1.500000 0.050000"/>
+  <geom name="pyramid_riser_2_re_20" class="stair_riser" pos="1.520000 0.000000 0.250000" size="0.020000 1.500000 0.050000"/>
+  <geom name="pyramid_ring_3_s_21" class="stair_tread" pos="0.000000 -1.350000 0.250000" size="1.500000 0.150000 0.050000"/>
+  <geom name="pyramid_ring_3_n_22" class="stair_tread" pos="0.000000 1.350000 0.250000" size="1.500000 0.150000 0.050000"/>
+  <geom name="pyramid_ring_3_w_23" class="stair_tread" pos="-1.350000 0.000000 0.250000" size="0.150000 1.200000 0.050000"/>
+  <geom name="pyramid_ring_3_e_24" class="stair_tread" pos="1.350000 0.000000 0.250000" size="0.150000 1.200000 0.050000"/>
+  <geom name="pyramid_riser_3_rs_25" class="stair_riser" pos="0.000000 -1.220000 0.350000" size="1.200000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_3_rn_26" class="stair_riser" pos="0.000000 1.220000 0.350000" size="1.200000 0.020000 0.050000"/>
+  <geom name="pyramid_riser_3_rw_27" class="stair_riser" pos="-1.220000 0.000000 0.350000" size="0.020000 1.200000 0.050000"/>
+  <geom name="pyramid_riser_3_re_28" class="stair_riser" pos="1.220000 0.000000 0.350000" size="0.020000 1.200000 0.050000"/>
+  <geom name="pyramid_top" class="stair_tread" pos="0.000000 0.000000 0.350000" size="1.200000 1.200000 0.050000"/>
+  </body>
+  <!-- Second pyramid: 15cm rise; behind robot (-X), center 2.8 m from origin. -->
+  <body name="stairs_pyramid_up_h015" pos="-2.8 0 0">
+  <geom name="pyramid_h015_riser_0_rs" class="stair_riser" pos="0.000000 -2.120000 0.075000" size="2.100000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_0_rn" class="stair_riser" pos="0.000000 2.120000 0.075000" size="2.100000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_0_rw" class="stair_riser" pos="-2.120000 0.000000 0.075000" size="0.020000 2.100000 0.075000"/>
+  <geom name="pyramid_h015_riser_0_re" class="stair_riser" pos="2.120000 0.000000 0.075000" size="0.020000 2.100000 0.075000"/>
+  <geom name="pyramid_h015_ring_1_s" class="stair_tread" pos="0.000000 -1.950000 0.075000" size="2.100000 0.150000 0.075000"/>
+  <geom name="pyramid_h015_ring_1_n" class="stair_tread" pos="0.000000 1.950000 0.075000" size="2.100000 0.150000 0.075000"/>
+  <geom name="pyramid_h015_ring_1_w" class="stair_tread" pos="-1.950000 0.000000 0.075000" size="0.150000 1.800000 0.075000"/>
+  <geom name="pyramid_h015_ring_1_e" class="stair_tread" pos="1.950000 0.000000 0.075000" size="0.150000 1.800000 0.075000"/>
+  <geom name="pyramid_h015_riser_1_rs" class="stair_riser" pos="0.000000 -1.820000 0.225000" size="1.800000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_1_rn" class="stair_riser" pos="0.000000 1.820000 0.225000" size="1.800000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_1_rw" class="stair_riser" pos="-1.820000 0.000000 0.225000" size="0.020000 1.800000 0.075000"/>
+  <geom name="pyramid_h015_riser_1_re" class="stair_riser" pos="1.820000 0.000000 0.225000" size="0.020000 1.800000 0.075000"/>
+  <geom name="pyramid_h015_ring_2_s" class="stair_tread" pos="0.000000 -1.650000 0.225000" size="1.800000 0.150000 0.075000"/>
+  <geom name="pyramid_h015_ring_2_n" class="stair_tread" pos="0.000000 1.650000 0.225000" size="1.800000 0.150000 0.075000"/>
+  <geom name="pyramid_h015_ring_2_w" class="stair_tread" pos="-1.650000 0.000000 0.225000" size="0.150000 1.500000 0.075000"/>
+  <geom name="pyramid_h015_ring_2_e" class="stair_tread" pos="1.650000 0.000000 0.225000" size="0.150000 1.500000 0.075000"/>
+  <geom name="pyramid_h015_riser_2_rs" class="stair_riser" pos="0.000000 -1.520000 0.375000" size="1.500000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_2_rn" class="stair_riser" pos="0.000000 1.520000 0.375000" size="1.500000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_2_rw" class="stair_riser" pos="-1.520000 0.000000 0.375000" size="0.020000 1.500000 0.075000"/>
+  <geom name="pyramid_h015_riser_2_re" class="stair_riser" pos="1.520000 0.000000 0.375000" size="0.020000 1.500000 0.075000"/>
+  <geom name="pyramid_h015_ring_3_s" class="stair_tread" pos="0.000000 -1.350000 0.375000" size="1.500000 0.150000 0.075000"/>
+  <geom name="pyramid_h015_ring_3_n" class="stair_tread" pos="0.000000 1.350000 0.375000" size="1.500000 0.150000 0.075000"/>
+  <geom name="pyramid_h015_ring_3_w" class="stair_tread" pos="-1.350000 0.000000 0.375000" size="0.150000 1.200000 0.075000"/>
+  <geom name="pyramid_h015_ring_3_e" class="stair_tread" pos="1.350000 0.000000 0.375000" size="0.150000 1.200000 0.075000"/>
+  <geom name="pyramid_h015_riser_3_rs" class="stair_riser" pos="0.000000 -1.220000 0.525000" size="1.200000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_3_rn" class="stair_riser" pos="0.000000 1.220000 0.525000" size="1.200000 0.020000 0.075000"/>
+  <geom name="pyramid_h015_riser_3_rw" class="stair_riser" pos="-1.220000 0.000000 0.525000" size="0.020000 1.200000 0.075000"/>
+  <geom name="pyramid_h015_riser_3_re" class="stair_riser" pos="1.220000 0.000000 0.525000" size="0.020000 1.200000 0.075000"/>
+  <geom name="pyramid_h015_top" class="stair_tread" pos="0.000000 0.000000 0.525000" size="1.200000 1.200000 0.075000"/>
+  </body>
+  <!-- Trapezoid: entry + 10 up + platform + 9 down (far end unchanged). body Y=10.5m -->
+  <body name="stairs_trapezoid" pos="0.000000 10.500000 0.000000">
+  <geom name="trap_up_entry" class="stair_tread" pos="0.000000 0.150000 0.075000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_entry_wl" class="stair_riser" pos="-0.990000 0.150000 0.075000" size="0.010000 0.150000 0.075000"/>
+  <geom name="trap_up_entry_wr" class="stair_riser" pos="0.990000 0.150000 0.075000" size="0.010000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_0" class="stair_tread" pos="0.000000 -0.150000 0.075000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_0" class="stair_tread" pos="0.000000 -0.150000 0.225000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_0_wl" class="stair_riser" pos="-0.990000 -0.150000 0.150000" size="0.010000 0.150000 0.150000"/>
+  <geom name="trap_up_tread_0_wr" class="stair_riser" pos="0.990000 -0.150000 0.150000" size="0.010000 0.150000 0.150000"/>
+  <geom name="trap_up_tread_1" class="stair_tread" pos="0.000000 -0.450000 0.225000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_1" class="stair_tread" pos="0.000000 -0.450000 0.375000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_1_wl" class="stair_riser" pos="-0.990000 -0.450000 0.225000" size="0.010000 0.150000 0.225000"/>
+  <geom name="trap_up_tread_1_wr" class="stair_riser" pos="0.990000 -0.450000 0.225000" size="0.010000 0.150000 0.225000"/>
+  <geom name="trap_up_tread_2" class="stair_tread" pos="0.000000 -0.750000 0.375000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_2" class="stair_tread" pos="0.000000 -0.750000 0.525000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_2_wl" class="stair_riser" pos="-0.990000 -0.750000 0.300000" size="0.010000 0.150000 0.300000"/>
+  <geom name="trap_up_tread_2_wr" class="stair_riser" pos="0.990000 -0.750000 0.300000" size="0.010000 0.150000 0.300000"/>
+  <geom name="trap_up_tread_3" class="stair_tread" pos="0.000000 -1.050000 0.525000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_3" class="stair_tread" pos="0.000000 -1.050000 0.675000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_3_wl" class="stair_riser" pos="-0.990000 -1.050000 0.375000" size="0.010000 0.150000 0.375000"/>
+  <geom name="trap_up_tread_3_wr" class="stair_riser" pos="0.990000 -1.050000 0.375000" size="0.010000 0.150000 0.375000"/>
+  <geom name="trap_up_tread_4" class="stair_tread" pos="0.000000 -1.350000 0.675000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_4" class="stair_tread" pos="0.000000 -1.350000 0.825000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_4_wl" class="stair_riser" pos="-0.990000 -1.350000 0.450000" size="0.010000 0.150000 0.450000"/>
+  <geom name="trap_up_tread_4_wr" class="stair_riser" pos="0.990000 -1.350000 0.450000" size="0.010000 0.150000 0.450000"/>
+  <geom name="trap_up_tread_5" class="stair_tread" pos="0.000000 -1.650000 0.825000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_5" class="stair_tread" pos="0.000000 -1.650000 0.975000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_5_wl" class="stair_riser" pos="-0.990000 -1.650000 0.525000" size="0.010000 0.150000 0.525000"/>
+  <geom name="trap_up_tread_5_wr" class="stair_riser" pos="0.990000 -1.650000 0.525000" size="0.010000 0.150000 0.525000"/>
+  <geom name="trap_up_tread_6" class="stair_tread" pos="0.000000 -1.950000 0.975000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_6" class="stair_tread" pos="0.000000 -1.950000 1.125000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_6_wl" class="stair_riser" pos="-0.990000 -1.950000 0.600000" size="0.010000 0.150000 0.600000"/>
+  <geom name="trap_up_tread_6_wr" class="stair_riser" pos="0.990000 -1.950000 0.600000" size="0.010000 0.150000 0.600000"/>
+  <geom name="trap_up_tread_7" class="stair_tread" pos="0.000000 -2.250000 1.125000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_7" class="stair_tread" pos="0.000000 -2.250000 1.275000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_7_wl" class="stair_riser" pos="-0.990000 -2.250000 0.675000" size="0.010000 0.150000 0.675000"/>
+  <geom name="trap_up_tread_7_wr" class="stair_riser" pos="0.990000 -2.250000 0.675000" size="0.010000 0.150000 0.675000"/>
+  <geom name="trap_up_tread_8" class="stair_tread" pos="0.000000 -2.550000 1.275000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_infill_8" class="stair_tread" pos="0.000000 -2.550000 1.425000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_8_wl" class="stair_riser" pos="-0.990000 -2.550000 0.750000" size="0.010000 0.150000 0.750000"/>
+  <geom name="trap_up_tread_8_wr" class="stair_riser" pos="0.990000 -2.550000 0.750000" size="0.010000 0.150000 0.750000"/>
+  <geom name="trap_up_tread_9" class="stair_tread" pos="0.000000 -2.850000 1.425000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_up_tread_9_wl" class="stair_riser" pos="-0.990000 -2.850000 0.750000" size="0.010000 0.150000 0.750000"/>
+  <geom name="trap_up_tread_9_wr" class="stair_riser" pos="0.990000 -2.850000 0.750000" size="0.010000 0.150000 0.750000"/>
+  <geom name="trap_platform" class="stair_tread" pos="0.000000 -4.000000 0.750000" size="1.000000 1.000000 0.750000"/>
+  <geom name="trap_platform_wl" class="stair_riser" pos="-0.990000 -4.000000 0.750000" size="0.010000 1.000000 0.750000"/>
+  <geom name="trap_platform_wr" class="stair_riser" pos="0.990000 -4.000000 0.750000" size="0.010000 1.000000 0.750000"/>
+  <geom name="trap_down_tread_0" class="stair_tread" pos="0.000000 -5.150000 1.275000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_0" class="stair_tread" pos="0.000000 -5.150000 1.125000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_0_wl" class="stair_riser" pos="-0.990000 -5.150000 0.675000" size="0.010000 0.150000 0.675000"/>
+  <geom name="trap_down_tread_0_wr" class="stair_riser" pos="0.990000 -5.150000 0.675000" size="0.010000 0.150000 0.675000"/>
+  <geom name="trap_down_tread_1" class="stair_tread" pos="0.000000 -5.450000 1.125000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_1" class="stair_tread" pos="0.000000 -5.450000 0.975000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_1_wl" class="stair_riser" pos="-0.990000 -5.450000 0.600000" size="0.010000 0.150000 0.600000"/>
+  <geom name="trap_down_tread_1_wr" class="stair_riser" pos="0.990000 -5.450000 0.600000" size="0.010000 0.150000 0.600000"/>
+  <geom name="trap_down_tread_2" class="stair_tread" pos="0.000000 -5.750000 0.975000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_2" class="stair_tread" pos="0.000000 -5.750000 0.825000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_2_wl" class="stair_riser" pos="-0.990000 -5.750000 0.525000" size="0.010000 0.150000 0.525000"/>
+  <geom name="trap_down_tread_2_wr" class="stair_riser" pos="0.990000 -5.750000 0.525000" size="0.010000 0.150000 0.525000"/>
+  <geom name="trap_down_tread_3" class="stair_tread" pos="0.000000 -6.050000 0.825000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_3" class="stair_tread" pos="0.000000 -6.050000 0.675000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_3_wl" class="stair_riser" pos="-0.990000 -6.050000 0.450000" size="0.010000 0.150000 0.450000"/>
+  <geom name="trap_down_tread_3_wr" class="stair_riser" pos="0.990000 -6.050000 0.450000" size="0.010000 0.150000 0.450000"/>
+  <geom name="trap_down_tread_4" class="stair_tread" pos="0.000000 -6.350000 0.675000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_4" class="stair_tread" pos="0.000000 -6.350000 0.525000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_4_wl" class="stair_riser" pos="-0.990000 -6.350000 0.375000" size="0.010000 0.150000 0.375000"/>
+  <geom name="trap_down_tread_4_wr" class="stair_riser" pos="0.990000 -6.350000 0.375000" size="0.010000 0.150000 0.375000"/>
+  <geom name="trap_down_tread_5" class="stair_tread" pos="0.000000 -6.650000 0.525000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_5" class="stair_tread" pos="0.000000 -6.650000 0.375000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_5_wl" class="stair_riser" pos="-0.990000 -6.650000 0.300000" size="0.010000 0.150000 0.300000"/>
+  <geom name="trap_down_tread_5_wr" class="stair_riser" pos="0.990000 -6.650000 0.300000" size="0.010000 0.150000 0.300000"/>
+  <geom name="trap_down_tread_6" class="stair_tread" pos="0.000000 -6.950000 0.375000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_6" class="stair_tread" pos="0.000000 -6.950000 0.225000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_6_wl" class="stair_riser" pos="-0.990000 -6.950000 0.225000" size="0.010000 0.150000 0.225000"/>
+  <geom name="trap_down_tread_6_wr" class="stair_riser" pos="0.990000 -6.950000 0.225000" size="0.010000 0.150000 0.225000"/>
+  <geom name="trap_down_tread_7" class="stair_tread" pos="0.000000 -7.250000 0.225000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_infill_7" class="stair_tread" pos="0.000000 -7.250000 0.075000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_7_wl" class="stair_riser" pos="-0.990000 -7.250000 0.150000" size="0.010000 0.150000 0.150000"/>
+  <geom name="trap_down_tread_7_wr" class="stair_riser" pos="0.990000 -7.250000 0.150000" size="0.010000 0.150000 0.150000"/>
+  <geom name="trap_down_tread_8" class="stair_tread" pos="0.000000 -7.550000 0.075000" size="1.000000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_8_wl" class="stair_riser" pos="-0.990000 -7.550000 0.075000" size="0.010000 0.150000 0.075000"/>
+  <geom name="trap_down_tread_8_wr" class="stair_riser" pos="0.990000 -7.550000 0.075000" size="0.010000 0.150000 0.075000"/>
+  </body>
+  <!-- Right of spawn (-Y): four platforms 2.0m x 1.0m (h 0.15/0.15/0.20/0.25m), 0.3m edge gap each. -->
+  <body name="platforms_right" pos="0.000000 -3.150000 0.000000">
+  <geom name="platform_right_near" class="stair_tread" pos="0.000000 0.000000 0.060000" size="1.000000 0.500000 0.060000"/>
+  <geom name="platform_right_far" class="stair_tread" pos="0.000000 -1.300000 0.075000" size="1.000000 0.500000 0.075000"/>
+  <geom name="platform_right_h20" class="stair_tread" pos="0.000000 -2.600000 0.100000" size="1.000000 0.500000 0.100000"/>
+  <geom name="platform_right_h25" class="stair_tread" pos="0.000000 -3.900000 0.125000" size="1.000000 0.500000 0.125000"/>
+  </body>
+  </worldbody>
+</mujoco>
