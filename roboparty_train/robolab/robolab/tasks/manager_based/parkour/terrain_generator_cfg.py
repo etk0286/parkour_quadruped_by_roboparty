@@ -334,31 +334,31 @@ ROUGH_TERRAINS_CFG = FiledTerrainGeneratorCfg(
         #     },
         # ),
         
-        "boxes": terrain_gen.PerlinDiscreteObstaclesTerrainCfg(
-             proportion=0.1,
-             num_obstacles=30,
-             obstacle_height_mode="choice",
-             obstacle_width_range=(0.3, 1.0),
-             obstacle_height_range=(0.05, 0.1),
-             platform_width=2.0,
-             border_width=0.5,
-             wall_prob=[0.3, 0.3, 0.3, 0.3],
-             wall_height=5.0,
-             wall_thickness=0.05,
-             perlin_cfg=terrain_gen.PerlinPlaneTerrainCfg(
-                 noise_scale=0.05,
-                 noise_frequency=20,
-                 fractal_octaves=2,
-                 fractal_lacunarity=2.0,
-                 fractal_gain=0.25,
-                 centering=True,
-             ),
-             flat_patch_sampling={
-                 "target": FlatPatchSamplingCfg(
-                     num_patches=50, patch_radius=[0.05, 0.10, 0.15, 0.20], max_height_diff=0.05
-                ),
-            },
-        ),
+        # "boxes": terrain_gen.PerlinDiscreteObstaclesTerrainCfg(
+        #      proportion=0.1,
+        #      num_obstacles=30,
+        #      obstacle_height_mode="choice",
+        #      obstacle_width_range=(0.3, 1.0),
+        #      obstacle_height_range=(0.05, 0.1),
+        #      platform_width=2.0,
+        #      border_width=0.5,
+        #      wall_prob=[0.3, 0.3, 0.3, 0.3],
+        #      wall_height=5.0,
+        #      wall_thickness=0.05,
+        #      perlin_cfg=terrain_gen.PerlinPlaneTerrainCfg(
+        #          noise_scale=0.05,
+        #          noise_frequency=20,
+        #          fractal_octaves=2,
+        #          fractal_lacunarity=2.0,
+        #          fractal_gain=0.25,
+        #          centering=True,
+        #      ),
+        #      flat_patch_sampling={
+        #          "target": FlatPatchSamplingCfg(
+        #              num_patches=50, patch_radius=[0.05, 0.10, 0.15, 0.20], max_height_diff=0.05
+        #         ),
+        #     },
+        # ),
         
         # "mesh_boxes": terrain_gen.PerlinMeshRandomMultiBoxTerrainCfg(
         #     proportion=0.1,

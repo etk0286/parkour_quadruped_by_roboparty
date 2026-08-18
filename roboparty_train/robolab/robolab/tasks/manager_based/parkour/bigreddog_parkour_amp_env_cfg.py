@@ -60,20 +60,20 @@ BIG_REDDOG_AMP_PARKOUR_REWARD_WEIGHTS = {
     "dont_wait": -0.5,
     "is_alive": 3.0,
     "lin_vel_z_l2": -5.0,
-    "stand_still": -4.0, #1.5
+    "stand_still": -1.5,  #
     # Contact and stability
     "feet_slide": -1.0,
     "ang_vel_xy_l2": -0.1,
     "flat_orientation_l2": -3.0,
-    "sound_suppression": -5.0e-4,
+    "sound_suppression": -1.0e-3,  #
     "undesired_contacts": -1.0,
     "feet_stumble": -1.0,
     # Actuation and regularization
     "dof_torques_l2": -1.0e-5,
-    "dof_acc_l2": -2.5e-7,
+    "dof_acc_l2": -1.25e-6, #-2.5e-7
     "dof_vel_l2": -1.0e-4,
     "joint_regularization": -1.0e-4,
-    "action_rate_l2": -0.01,
+    "action_rate_l2": -0.02, #-0.01
     "energy": -5.0e-5,
     # Safety limits
     "dof_pos_limits": -1.0,
@@ -133,7 +133,6 @@ ROUGH_TERRAINS_CFG_PLAY = copy.deepcopy(ROUGH_TERRAINS_CFG)
 for sub_terrain_cfg in ROUGH_TERRAINS_CFG_PLAY.sub_terrains.values():
     sub_terrain_cfg.wall_prob = [0.0, 0.0, 0.0, 0.0]
 
-
 @configclass
 class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
     """Training configuration for BigReddog parkour with AMP."""
@@ -141,9 +140,24 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
+
+        # Physics frequency
+        self.sim.dt = 0.005  # 200 Hz
+
+        # Policy/model frequency
+        self.decimation = 4  # 200 / 4 = 50 Hz
+
+        # Render interval
+        self.sim.render_interval = self.decimation
+
+        # Depth-camera frequency
+        self.scene.camera.update_period = 0.02  # 50 Hz
+
+
+        
         # BigReddog robot and robot-mounted sensors.
         self.scene.robot = BIG_REDDOG_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-        self.scene.terrain.terrain_generator = ROUGH_TERRAINS_CFG
+        self.scene.terrain.terrain_generator = copy.deepcopy(ROUGH_TERRAINS_CFG)
         self.scene.terrain.max_init_terrain_level = 0
         self.scene.camera.prim_path = "{ENV_REGEX_NS}/Robot/base_link"
         self.scene.camera.ray_alignment = "base"
@@ -325,13 +339,13 @@ class CommandsCfg:
         debug_vis=False,
         velocity_control_stiffness=2.0,
         heading_control_stiffness=2.0,
-        rel_standing_envs=0.05,
+        rel_standing_envs=0.15, #0.05
         straight_target_prob=0.8, # 80% chance to force the target y to 0 for straight walking.
         ranges=mdp.PoseVelocityCommandCfg.Ranges(lin_vel_x=(0.0, 0.0), lin_vel_y=(0.0, 0.0), ang_vel_z=(-1.0, 1.0)),
         #random_velocity_terrain=None["mesh_boxes"],
         velocity_ranges={
             # "mesh_boxes": {"lin_vel_x": (0.2, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
-            "boxes": {"lin_vel_x": (0.2, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+            #"boxes": {"lin_vel_x": (0.2, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             # "stepping_stones": {"lin_vel_x": (0.4, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "perlin_rough": {"lin_vel_x": (0.4, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
             "perlin_rough_walk": {"lin_vel_x": (0.4, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (0.0, 0.0)},
@@ -373,7 +387,7 @@ class BigReddogParkourAmpEnvCfg_PLAY(BigReddogParkourAmpEnvCfg):
         self.commands.base_velocity.rel_standing_envs = 0.0
         self.commands.base_velocity.debug_vis = True
 
-        terrain_name = "pyramid_stairs_inv_32"
+        terrain_name = "pyramid_stairs_inv_28"
         #perlin_rough
         # perlin_rough_walk
         # perlin_rough_trun
