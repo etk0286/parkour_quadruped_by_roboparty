@@ -309,6 +309,54 @@ def volume_points_penetration(
     return torch.sum(velocity_times_penetration, dim=-1)
 
 
+# def feet_edge(
+#     env: ManagerBasedRLEnv,
+#     sensor_cfg: SceneEntityCfg,
+#     contact_sensor_cfg: SceneEntityCfg,
+#     terrain_level_threshold: int = 3,
+#     contact_force_threshold: float = 1.0,
+#     penetration_tolerance: float = 0.0,
+# ) -> torch.Tensor:
+#     """Count contacting feet that overlap a terrain edge.
+
+#     This is the manager-based Isaac Lab equivalent of the legacy
+#     ``_reward_feet_edge`` implementation. Terrain edges come from the virtual
+#     obstacles already registered with the foot ``VolumePoints`` sensor, while
+#     contact state comes from an Isaac Lab ``ContactSensor``. The function is
+#     stateless and does not write intermediate values onto the environment.
+
+#     The returned value is non-negative (zero, one, or the number of configured
+#     feet at an edge). Configure it with a negative reward weight to use it as a
+#     penalty.
+#     """
+#     volume_sensor: VolumePoints = env.scene.sensors[sensor_cfg.name]
+#     contact_sensor: ContactSensor = env.scene.sensors[contact_sensor_cfg.name]
+
+#     penetration = volume_sensor.data.penetration_offset
+#     if penetration.ndim != 4:
+#         raise RuntimeError(
+#             f"Expected '{sensor_cfg.name}' penetration_offset to have shape (N, B, P, 3), "
+#             f"but received {tuple(penetration.shape)}."
+#         )
+
+#     # A foot is at an edge when any of its sampled volume points overlaps an
+#     # edge cylinder. Keeping the body dimension gives one flag per foot.
+#     penetration_depth = torch.linalg.vector_norm(penetration, dim=-1)
+#     feet_at_edge = torch.any(penetration_depth > penetration_tolerance, dim=-1)
+
+#     net_forces = contact_sensor.data.net_forces_w_history[:, :, contact_sensor_cfg.body_ids]
+#     feet_in_contact = torch.amax(torch.linalg.vector_norm(net_forces, dim=-1), dim=1) > contact_force_threshold
+#     if feet_in_contact.shape[1] != feet_at_edge.shape[1]:
+#         raise RuntimeError(
+#             "feet_edge requires volume_sensor_cfg and contact_sensor_cfg to select the same feet: "
+#             f"got {feet_at_edge.shape[1]} volume bodies and {feet_in_contact.shape[1]} contact bodies."
+#         )
+
+#     terrain = env.scene.terrain
+#     above_level_threshold = terrain.terrain_levels > terrain_level_threshold
+#     return torch.sum(feet_at_edge & feet_in_contact, dim=-1).to(dtype=torch.float32) * above_level_threshold
+
+
 def volume_points_penetration_feet(
     env: ManagerBasedRLEnv,
     sensor_cfg: SceneEntityCfg,

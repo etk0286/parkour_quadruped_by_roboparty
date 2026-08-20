@@ -626,6 +626,20 @@ class ParkourRewardsCfg(MultiRewardCfg):
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle_roll_link", ".*_knee_link"]),
         },
     )
+    # feet_edge = RewTerm(
+    #     func=mdp.feet_edge,
+    #     weight=-1.0,
+    #     params={
+    #         "sensor_cfg": SceneEntityCfg("leg_volume_points"),
+    #         "contact_sensor_cfg": SceneEntityCfg(
+    #             "contact_forces",
+    #             body_names=".*_ankle_roll_link",
+    #         ),
+    #         "terrain_level_threshold": 3,
+    #         "contact_force_threshold": 1.0,
+    #         "penetration_tolerance": 0.0,
+    # }
+
 
 @configclass
 class RewardsCfg(MultiRewardCfg):

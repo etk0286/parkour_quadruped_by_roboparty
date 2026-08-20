@@ -179,7 +179,7 @@ class BigReddogParkourEnvCfg_PLAY(BigReddogParkourEnvCfg):
         self.commands.base_velocity.debug_vis = True
 
         if self.scene.terrain.terrain_generator is not None:
-            terrain_name = "square_gaps"
+            terrain_name = "pyramid_stairs_inv_28"
             terrain_generator = self.scene.terrain.terrain_generator
             selected_terrain = terrain_generator.sub_terrains[terrain_name]
             selected_terrain.proportion = 1.0
@@ -189,8 +189,8 @@ class BigReddogParkourEnvCfg_PLAY(BigReddogParkourEnvCfg):
             }
 
             self.commands.base_velocity.velocity_ranges = {
-                "square_gaps": {
-                    "lin_vel_x": (0.4, 0.8), 
+                "pyramid_stairs_inv_28": {
+                    "lin_vel_x": (0.0, 0.6), 
                     "lin_vel_y": (0.0, 0.0), 
                     "ang_vel_z": (-1.0, 1.0) 
                 },
