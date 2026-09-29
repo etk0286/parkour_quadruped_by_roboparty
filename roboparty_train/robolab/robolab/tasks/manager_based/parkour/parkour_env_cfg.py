@@ -504,6 +504,25 @@ class ParkourRewardsCfg(MultiRewardCfg):
             "sensor_cfg": SceneEntityCfg("knee_volume_points"),
         },
     )
+    feet_air_time_penalty = RewTerm(
+        func=mdp.feet_air_time_penalty,
+        weight=-0.5,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
+            "max_air_time": 0.4,
+            "max_penalty_per_foot": 0.5,
+        },
+    )
+
+    feet_air_time_symmetry_penalty = RewTerm(
+        func=mdp.feet_air_time_symmetry_penalty,
+        weight=-0.1,
+        params={
+            "left_sensor_cfg": SceneEntityCfg("contact_forces", body_names=["FL_foot", "RL_foot"], preserve_order=True),
+            "right_sensor_cfg": SceneEntityCfg("contact_forces", body_names=["FR_foot", "RR_foot"], preserve_order=True),
+        },
+    )
+
     feet_slide = RewTerm(
         func=mdp.contact_slide,
         weight=-1.0,

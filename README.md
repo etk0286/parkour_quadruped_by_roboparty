@@ -20,15 +20,15 @@ python robolab/scripts/rsl_rl/play_parkour.py   --task=BigReddog-Parkour-Play   
 
 tensorboard 
 ``` 
-tensorboard --logdir logs/rsl_rl/bigreddog_parkour --port 6006
+tensorboard --logdir logs/rsl_rl/bigreddog_parkour_amp --port 6006
 
 ``` 
 
 sim2sim parkour_quadruped
 ``` 
  python robolab/scripts/mujoco/sim2sim_bigreddog_parkour.py \
- --depth_encoder logs/rsl_rl/bigreddog_parkour_amp/2026-08-17_10-17-18_amp_parkour_acc/exported/0-depth_encoder.onnx \
- --actor logs/rsl_rl/bigreddog_parkour_amp/2026-08-17_10-17-18_amp_parkour_acc/exported/actor.onnx \
+ --depth_encoder /home/csl/parkour_quadruped_by_roboparty/roboparty_train/logs/rsl_rl/bigreddog_parkour_amp/2026-09-19_11-14-09_amp_flat/exported/0-depth_encoder.onnx \
+ --actor /home/csl/parkour_quadruped_by_roboparty/roboparty_train/logs/rsl_rl/bigreddog_parkour_amp/2026-09-19_11-14-09_amp_flat/exported/actor.onnx \
  --scene stairs
 ``` 
 ![Robot demonstration](sim2sim.png)
@@ -45,10 +45,10 @@ amp+parkour
 train
 ``` 
 python robolab/scripts/rsl_rl/train.py \
-  --task BigReddog-Parkour-AMP \
-  --num_envs 4096 \
-  --max_iterations 30000 \
-  --run_name amp_parkour_acc \
+  --task BigReddog-Parkour-AMP0 \
+  --num_envs 1024 \
+  --max_iterations 60000 \
+  --run_name amp_flat \
   --logger tensorboard \
   --headless
 ``` 
@@ -56,10 +56,10 @@ python robolab/scripts/rsl_rl/train.py \
 test
 ```
 python robolab/scripts/rsl_rl/train.py \
-  --task BigReddog-Parkour-AMP \
+  --task BigReddog-Parkour-AMP0 \
   --num_envs 1 \
   --max_iterations 30000 \
-  --run_name amp_parkour_acc \
+  --run_name amp_flat \
   --logger tensorboard 
 ```
 
@@ -68,10 +68,13 @@ python robolab/scripts/rsl_rl/train.py \
 play
 
 ``` 
-PYTHONPATH=/home/csl/Isaac_Lab_Roboparty/roboparty_train/robolab \
+
+PYTHONPATH=/home/csl/parkour_quadruped_by_roboparty/roboparty_train/robolab 
 
 python robolab/scripts/rsl_rl/play_parkour.py \
-  --task BigReddog-Parkour-AMP-Play \
+  --task BigReddog-Parkour-AMP-Play0 \
   --num_envs 1 \
-  --checkpoint /absolute/path/to/model_5000.pt
+  --checkpoint /home/csl/parkour_quadruped_by_roboparty/roboparty_train/logs/rsl_rl/bigreddog_parkour_amp/2026-09-26_11-58-35_amp_flat/model_11500.pt \
+  --exportonnx
   ``` 
+

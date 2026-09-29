@@ -122,7 +122,23 @@ class PPOAMP(PPO):
         disc_obs = self.amp_discriminator.get_disc_obs(obs, flatten_history_dim=False)
         disc_demo_obs = self.amp_discriminator.get_disc_demo_obs(obs, flatten_history_dim=False)
         # Compute the Style Reward
-        self.style_rewards, self.disc_score = self.amp_discriminator.predict_style_reward(disc_obs, dt=self.amp_cfg["step_dt"])
+        reward_mask = extras.get("amp_reward_mask")
+        if reward_mask is None:
+            self.style_rewards, self.disc_score = self.amp_discriminator.predict_style_reward(
+                disc_obs, dt=self.amp_cfg["step_dt"]
+            )
+        else:
+            reward_mask = reward_mask.to(device=disc_obs.device, dtype=torch.bool)
+            if reward_mask.shape != (disc_obs.shape[0],):
+                raise ValueError("amp_reward_mask must have shape (num_envs,).")
+            self.style_rewards = disc_obs.new_zeros(disc_obs.shape[0])
+            self.disc_score = disc_obs.new_zeros(disc_obs.shape[0])
+            if reward_mask.any():
+                style_rewards, disc_score = self.amp_discriminator.predict_style_reward(
+                    disc_obs[reward_mask], dt=self.amp_cfg["step_dt"]
+                )
+                self.style_rewards[reward_mask] = style_rewards
+                self.disc_score[reward_mask] = disc_score
         # Linearly interpolate between task reward and style reward
         self.rewards_lerp = self.amp_discriminator.lerp_reward(task_reward=rewards, style_reward=self.style_rewards)
         # Store the un-normalized disc obs and disc demo obs into buffers

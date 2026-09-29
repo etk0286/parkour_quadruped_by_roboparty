@@ -137,6 +137,15 @@ for sub_terrain_cfg in ROUGH_TERRAINS_CFG_PLAY.sub_terrains.values():
 class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
     """Training configuration for BigReddog parkour with AMP."""
 
+    # AMP style reward is restricted to these assigned terrain types.
+    # None enables AMP on all terrains; an empty tuple disables the style reward.
+    amp_reward_terrain_names: tuple[str, ...] | None = (
+        "perlin_rough",
+        "perlin_rough_walk",
+        "perlin_rough_trun",
+        "perlin_rough_stand",
+    )
+
     def __post_init__(self):
         super().__post_init__()
 
@@ -169,7 +178,7 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         self.scene.knee_volume_points = None
         self.scene.camera.offset.pos = (0.28, 0.0, 0.1214)
         self.scene.camera.offset.rot = (0.939693,0.0,0.342020,0.0)#40 degree
-        self.sim.physx.gpu_collision_stack_size = 2**31
+        self.sim.physx.gpu_collision_stack_size = 2**29
 
         # AMP motion data and matching discriminator history.
         self.motion_data.motion_dataset.motion_data_dir = BIG_REDDOG_MOTION_DIR

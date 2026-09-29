@@ -13,7 +13,7 @@
         <geom contype="0" conaffinity="1" group="3" condim="1"/>
         <default class="foot">
           <geom type="sphere" size="0.02" condim="3" priority="1"
-            friction="0.6 0.005 0.0001"/>
+            friction="0.6 0.005 0.0001"/> <!-- 2.0 0.005 0.0001-->
         </default>
       </default>
       <!-- 40.5 N.m is the training IdealPdActuatorCfg effort_limit. Split by

@@ -39,6 +39,41 @@ def feet_air_time(env, command_name: str, vel_threshold: float, sensor_cfg: Scen
     )
     return reward
 
+def feet_air_time_penalty(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    max_air_time: float = 0.4,
+    max_penalty_per_foot: float = 0.5,
+) -> torch.Tensor:
+    """Penalize any foot staying airborne longer than max_air_time, capped per foot.
+
+    No penalty while a foot's current air time is under max_air_time. Once it
+    exceeds that, the excess is penalized, capped at max_penalty_per_foot so a
+    single lingering foot can't dominate the total reward.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]  # (N, num_feet)
+    excess = torch.clamp(air_time - max_air_time, min=0.0, max=max_penalty_per_foot)  # (N, num_feet)
+    return torch.sum(excess, dim=-1)  # (N,)
+
+def feet_air_time_symmetry_penalty(
+    env: ManagerBasedRLEnv,
+    left_sensor_cfg: SceneEntityCfg,
+    right_sensor_cfg: SceneEntityCfg,
+) -> torch.Tensor:
+    """Penalize left/right asymmetry in air time between paired legs.
+
+    Compares current air time between matched left-right leg pairs
+    (e.g. FL vs FR, RL vs RR) so a gait where one side consistently
+    swings longer than the other gets penalized, without constraining
+    exact joint angles or timing.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[left_sensor_cfg.name]
+    left_air_time = contact_sensor.data.current_air_time[:, left_sensor_cfg.body_ids]
+    right_air_time = contact_sensor.data.current_air_time[:, right_sensor_cfg.body_ids]
+    diff = torch.abs(left_air_time - right_air_time)
+    return torch.sum(diff, dim=-1)
+
 
 # def stand_still(
 #     env: ManagerBasedRLEnv,
@@ -59,9 +94,9 @@ def feet_air_time(env, command_name: str, vel_threshold: float, sensor_cfg: Scen
 def stand_still(
     env: ManagerBasedRLEnv,
     command_name: str = "base_velocity",
-    joint_pos_weight: float = 0.6,
-    joint_vel_weight: float = 0.05,
-    body_vel_weight: float = 0.35,
+    joint_pos_weight: float = 0.05,
+    joint_vel_weight: float = 0.2,
+    body_vel_weight: float = 0.75,
 ) -> torch.Tensor:
     """Penalize joint position error from default on the articulation."""
     # extract the used quantities (to enable type-hinting)
