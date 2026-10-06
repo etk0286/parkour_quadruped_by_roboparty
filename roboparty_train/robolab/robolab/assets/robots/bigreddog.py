@@ -38,7 +38,7 @@ from robolab.assets import ISAAC_DATA_DIR
 
 BIG_REDDOG_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
-        asset_path=f"{ISAAC_DATA_DIR}/robots/roboparty/bigreddog_plus/urdf/bigreddog_plus.urdf",
+        asset_path=f"{ISAAC_DATA_DIR}/robots/roboparty/bigreddog/urdf/big_reddog.urdf",
         fix_base=False,
         activate_contact_sensors=True,
         replace_cylinders_with_capsules=True,

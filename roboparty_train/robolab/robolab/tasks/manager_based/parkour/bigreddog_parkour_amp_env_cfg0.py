@@ -172,7 +172,9 @@ class BigReddogParkourAmpEnvCfg(ParkourEnvCfg):
         # Depth-camera frequency
         self.scene.camera.update_period = 0.02  # 50 Hz
 
-
+        #friction
+        self.events.physics_material.params["static_friction_range"] = (0.3, 2.2)
+        self.events.physics_material.params["dynamic_friction_range"] = (0.3, 2.2)
         
         # BigReddog robot and robot-mounted sensors.
         self.scene.robot = BIG_REDDOG_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")

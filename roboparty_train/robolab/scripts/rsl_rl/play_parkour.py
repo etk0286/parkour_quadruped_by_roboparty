@@ -173,7 +173,13 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         start_time = time.time()
         with torch.inference_mode():
             actions = policy(obs)
-            obs, _, dones, _ = env.step(actions)
+            #obs, _, dones, _ = env.step(actions)
+            obs, rewards, dones, extras = env.step(actions)
+            if dones.any().item():
+                print("Episode ended!")
+                print("dones:", dones)
+                print("time_outs:", extras.get("time_outs"))
+                print("log:", extras.get("log"))
             policy_nn.reset(dones)
         if args_cli.video:
             timestep += 1
